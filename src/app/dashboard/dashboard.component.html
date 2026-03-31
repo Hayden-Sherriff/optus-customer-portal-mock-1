@@ -13,13 +13,15 @@
 
   @if (!isLoading && !hasError) {
     <div class="plans-grid">
-      @for (plan of plans$ | async; track plan.name) {
+      @for (plan of plans; track plan.name) {
         <div class="plan-card">
           <h3>{{ plan.name }}</h3>
           <p>Data: {{ plan.data }}</p>
           <p>Calls: {{ plan.calls }}</p>
           <p>Expires: {{ plan.expiry }}</p>
         </div>
+      } @empty {
+        <p>No active plans found.</p>
       }
     </div>
   }
