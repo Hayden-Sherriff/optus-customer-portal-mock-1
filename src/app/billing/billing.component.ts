@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, switchMap, takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
-
+import { map } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 
 export interface Invoice {
   id: string;
@@ -11,33 +11,25 @@ export interface Invoice {
   status: 'paid' | 'pending' | 'overdue';
 }
 
-
 @Component({
   selector: 'app-billing',
+  standalone: true,
+  imports: [CurrencyPipe, DatePipe],
   templateUrl: './billing.component.html',
 })
 export class BillingComponent implements OnInit {
   invoices: Invoice[] = [];
-  private destroy$ = new Subject<void>();
-
-
-  constructor(private http: HttpClient) {}
-
+  private http = inject(HttpClient);
+  private destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
     this.http.get<Invoice[]>('/api/invoices').pipe(
       map(invoices => invoices.sort((a, b) =>
         new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()
       )),
-      takeUntil(this.destroy$)
+      takeUntilDestroyed(this.destroyRef)
     ).subscribe(invoices => {
       this.invoices = invoices;
     });
-  }
-
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }
