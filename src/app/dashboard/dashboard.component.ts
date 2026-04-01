@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map, tap, catchError } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 
 export interface UserPlan {
@@ -14,27 +14,32 @@ export interface UserPlan {
 
 @Component({
   selector: 'app-dashboard',
+  standalone: true,
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
-  plans$: Observable<UserPlan[]>;
+  plans: UserPlan[] = [];
   isLoading = true;
   hasError = false;
   userName = '';
 
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
+  private destroyRef = inject(DestroyRef);
 
 
   ngOnInit(): void {
-    this.plans$ = this.http.get<UserPlan[]>('/api/plans').pipe(
-      tap(() => this.isLoading = false),
+    this.http.get<UserPlan[]>('/api/plans').pipe(
       map(plans => plans.filter(p => p.expiry !== 'expired')),
-      catchError(err => {
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: plans => {
+        this.plans = plans;
+        this.isLoading = false;
+      },
+      error: () => {
         this.hasError = true;
         this.isLoading = false;
-        throw err;
-      })
-    );
+      }
+    });
   }
 }
