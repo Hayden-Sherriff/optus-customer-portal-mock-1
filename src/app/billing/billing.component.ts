@@ -19,6 +19,7 @@ export interface Invoice {
 })
 export class BillingComponent {
   invoices: Invoice[] = [];
+  isLoading = true;
 
   private http = inject(HttpClient);
   private destroyRef = inject(DestroyRef);
@@ -31,6 +32,7 @@ export class BillingComponent {
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(invoices => {
       this.invoices = invoices;
+      this.isLoading = false;
     });
   }
 }

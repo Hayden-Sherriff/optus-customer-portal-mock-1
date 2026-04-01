@@ -1,7 +1,11 @@
 <div class="billing-container">
   <h2>Billing</h2>
 
-  @if (invoices.length === 0) {
+  @if (isLoading) {
+    <div class="loading-spinner">Loading invoices...</div>
+  }
+
+  @if (!isLoading && invoices.length === 0) {
     <p class="no-invoices">No invoices found.</p>
   }
 
