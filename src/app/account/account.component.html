@@ -1,0 +1,34 @@
+<form [formGroup]="accountForm" (ngSubmit)="onSubmit()">
+  <div>
+    <label for="email">Email</label>
+    <input id="email" type="email" formControlName="email" />
+    @if (accountForm.controls.email.invalid && accountForm.controls.email.touched) {
+      <div class="error">
+        @if (accountForm.controls.email.hasError('required')) {
+          <span>Email is required.</span>
+        }
+        @if (accountForm.controls.email.hasError('email')) {
+          <span>Please enter a valid email address.</span>
+        }
+      </div>
+    }
+  </div>
+
+  <div>
+    <label for="phone">Phone</label>
+    <input id="phone" type="tel" formControlName="phone" />
+    @if (accountForm.controls.phone.invalid && accountForm.controls.phone.touched) {
+      <div class="error">
+        @if (accountForm.controls.phone.hasError('required')) {
+          <span>Phone number is required.</span>
+        }
+      </div>
+    }
+  </div>
+
+  @if (accountForm.invalid && accountForm.touched) {
+    <div class="form-error">Please correct the errors above before submitting.</div>
+  }
+
+  <button type="submit" [disabled]="accountForm.invalid">Save</button>
+</form>
