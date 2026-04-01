@@ -22,7 +22,7 @@ export interface UserPlan {
 export class DashboardComponent implements OnInit {
   private http = inject(HttpClient);
 
-  plans$: Observable<UserPlan[]>;
+  plans$!: Observable<UserPlan[]>;
   isLoading = true;
   hasError = false;
   userName = '';
