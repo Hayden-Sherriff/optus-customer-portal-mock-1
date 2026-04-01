@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { AsyncPipe } from '@angular/common';
+import { Observable, of } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
 
 
@@ -14,10 +15,12 @@ export interface UserPlan {
 
 @Component({
   selector: 'app-dashboard',
+  standalone: true,
+  imports: [AsyncPipe],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
-  plans$: Observable<UserPlan[]>;
+  plans$: Observable<UserPlan[]> = of([]);
   isLoading = true;
   hasError = false;
   userName = '';
@@ -33,8 +36,13 @@ export class DashboardComponent implements OnInit {
       catchError(err => {
         this.hasError = true;
         this.isLoading = false;
-        throw err;
+        return of([]);
       })
     );
+  }
+
+
+  trackByPlan(index: number, plan: UserPlan): string {
+    return plan.name;
   }
 }

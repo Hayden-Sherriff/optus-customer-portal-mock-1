@@ -1,0 +1,16 @@
+<div class="billing-container">
+  @if (invoices.length === 0) {
+    <p>No invoices found.</p>
+  } @else {
+    <div class="invoices-list">
+      @for (invoice of invoices; track invoice.id) {
+        <div class="invoice-card">
+          <p>Invoice #{{ invoice.id }}</p>
+          <p>Amount: {{ invoice.amount | currency }}</p>
+          <p>Due: {{ invoice.dueDate | date }}</p>
+          <p>Status: {{ invoice.status }}</p>
+        </div>
+      }
+    </div>
+  }
+</div>
