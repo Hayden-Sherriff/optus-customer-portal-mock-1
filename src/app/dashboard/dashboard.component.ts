@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { AsyncPipe } from '@angular/common';
 import { Observable } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
 
@@ -14,16 +15,17 @@ export interface UserPlan {
 
 @Component({
   selector: 'app-dashboard',
+  standalone: true,
+  imports: [AsyncPipe],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
+  private http = inject(HttpClient);
+
   plans$: Observable<UserPlan[]>;
   isLoading = true;
   hasError = false;
   userName = '';
-
-
-  constructor(private http: HttpClient) {}
 
 
   ngOnInit(): void {
