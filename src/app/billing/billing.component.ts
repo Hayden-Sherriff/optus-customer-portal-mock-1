@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, switchMap, takeUntil } from 'rxjs/operators';
+import { CurrencyPipe, DatePipe } from '@angular/common';
+import { map, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
 
@@ -14,9 +15,11 @@ export interface Invoice {
 
 @Component({
   selector: 'app-billing',
+  standalone: true,
+  imports: [CurrencyPipe, DatePipe],
   templateUrl: './billing.component.html',
 })
-export class BillingComponent implements OnInit {
+export class BillingComponent implements OnInit, OnDestroy {
   invoices: Invoice[] = [];
   private destroy$ = new Subject<void>();
 
