@@ -40,9 +40,4 @@ export class DashboardComponent implements OnInit {
       })
     );
   }
-
-
-  trackByPlan(index: number, plan: UserPlan): string {
-    return plan.name;
-  }
 }
