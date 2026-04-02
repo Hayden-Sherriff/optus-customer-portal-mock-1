@@ -1,0 +1,20 @@
+<div class="account-container">
+  <h2>Account Settings</h2>
+  <form [formGroup]="accountForm" (ngSubmit)="onSubmit()">
+    <div class="form-field">
+      <label for="email">Email</label>
+      <input id="email" type="email" formControlName="email">
+      @if (accountForm.get('email')?.invalid && accountForm.get('email')?.touched) {
+        <span class="error">Valid email is required.</span>
+      }
+    </div>
+    <div class="form-field">
+      <label for="phone">Phone</label>
+      <input id="phone" type="tel" formControlName="phone">
+      @if (accountForm.get('phone')?.invalid && accountForm.get('phone')?.touched) {
+        <span class="error">Phone number is required.</span>
+      }
+    </div>
+    <button type="submit" [disabled]="accountForm.invalid">Save Changes</button>
+  </form>
+</div>
