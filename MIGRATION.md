@@ -109,45 +109,55 @@ export class AppComponent {}
 
 ### Changes
 
-#### 1. Standalone Component Migration
+#### 1. Standalone Component Migration + Observable → Imperative Subscription
 ```typescript
-// Before
+// Before (Angular 14)
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
 })
-export class DashboardComponent implements OnInit { ... }
+export class DashboardComponent implements OnInit {
+  plans$: Observable<UserPlan[]>;
+  // ...
+  ngOnInit(): void {
+    this.plans$ = this.http.get<UserPlan[]>('/api/plans').pipe(
+      tap(() => this.isLoading = false),
+      map(plans => plans.filter(p => p.expiry !== 'expired')),
+      catchError(err => { throw err; })
+    );
+  }
+}
 
-// After
+// After (Angular 18)
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [AsyncPipe],
   templateUrl: './dashboard.component.html',
 })
-export class DashboardComponent implements OnInit { ... }
+export class DashboardComponent implements OnInit, OnDestroy {
+  plans: UserPlan[] = [];
+  private destroy$ = new Subject<void>();
+  // ...
+  ngOnInit(): void {
+    this.http.get<UserPlan[]>('/api/plans').pipe(
+      map(plans => plans.filter(p => p.expiry !== 'expired')),
+      catchError(err => { this.hasError = true; this.isLoading = false; return of([]); }),
+      takeUntil(this.destroy$)
+    ).subscribe(plans => {
+      this.plans = plans;
+      this.isLoading = false;
+    });
+  }
+  ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
+}
 ```
 
-#### 2. Explicit Pipe Import
-Standalone components must declare their pipe dependencies explicitly. `AsyncPipe` is imported from `@angular/common` and listed in the `imports` array.
+**Why imperative subscription?** The original used `plans$ | async` in the template inside an `@if (!isLoading)` block, creating a deadlock: the `async` pipe never subscribes because the block isn't rendered while `isLoading` is `true`, but `isLoading` only becomes `false` when the subscription emits. Switching to imperative subscription with a plain `plans: UserPlan[]` array decouples the data fetch from template rendering.
 
-#### 3. Strict Property Initialization
+#### 2. Proper Observable Error Handling
 ```typescript
 // Before
-plans$: Observable<UserPlan[]>;
-
-// After
-plans$: Observable<UserPlan[]> = of([]);
-```
-
-#### 4. Proper Observable Error Handling
-```typescript
-// Before
-catchError(err => {
-  this.hasError = true;
-  this.isLoading = false;
-  throw err;
-})
+catchError(err => { throw err; })
 
 // After
 catchError(err => {
@@ -157,7 +167,7 @@ catchError(err => {
 })
 ```
 
-#### 5. Template: `*ngIf` → `@if`
+#### 3. Template: `*ngIf` → `@if`
 ```html
 <!-- Before -->
 <div *ngIf="isLoading" class="loading-spinner">
@@ -172,21 +182,21 @@ catchError(err => {
 }
 ```
 
-#### 6. Template: `*ngFor` → `@for` with mandatory `track`
+#### 4. Template: `*ngFor` → `@for` with mandatory `track`
 ```html
 <!-- Before -->
 <div *ngFor="let plan of (plans$ | async); trackBy: trackByPlan"
      class="plan-card">
 
 <!-- After -->
-@for (plan of (plans$ | async); track plan.name) {
+@for (plan of plans; track plan.name) {
   <div class="plan-card">
     ...
   </div>
 }
 ```
 
-**Note:** `@for` requires an inline `track` expression (not a `trackBy` function reference). The old `trackByPlan` method was removed as dead code.
+**Note:** `@for` requires an inline `track` expression (not a `trackBy` function reference). The old `trackByPlan` method and `AsyncPipe` import were removed.
 
 ---
 
