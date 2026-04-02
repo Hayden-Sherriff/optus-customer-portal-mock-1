@@ -21,6 +21,7 @@ export interface Invoice {
 })
 export class BillingComponent implements OnInit, OnDestroy {
   invoices: Invoice[] = [];
+  isLoading = true;
   private destroy$ = new Subject<void>();
 
 
@@ -35,6 +36,7 @@ export class BillingComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe(invoices => {
       this.invoices = invoices;
+      this.isLoading = false;
     });
   }
 

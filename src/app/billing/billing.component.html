@@ -1,5 +1,9 @@
 <div class="billing-container">
-  @if (invoices.length === 0) {
+  @if (isLoading) {
+    <div class="loading-spinner">
+      Loading your invoices...
+    </div>
+  } @else if (invoices.length === 0) {
     <p>No invoices found.</p>
   } @else {
     <div class="invoices-list">
