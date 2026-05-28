@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, switchMap, takeUntil } from 'rxjs/operators';
+import { map, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
 
@@ -16,8 +16,10 @@ export interface Invoice {
   selector: 'app-billing',
   templateUrl: './billing.component.html',
 })
-export class BillingComponent implements OnInit {
+export class BillingComponent implements OnInit, OnDestroy {
   invoices: Invoice[] = [];
+  isLoading = true;
+  errorMessage = '';
   private destroy$ = new Subject<void>();
 
 
@@ -30,8 +32,15 @@ export class BillingComponent implements OnInit {
         new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()
       )),
       takeUntil(this.destroy$)
-    ).subscribe(invoices => {
-      this.invoices = invoices;
+    ).subscribe({
+      next: (invoices) => {
+        this.invoices = invoices;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.errorMessage = 'Unable to load your invoices. Please try again.';
+        this.isLoading = false;
+      }
     });
   }
 

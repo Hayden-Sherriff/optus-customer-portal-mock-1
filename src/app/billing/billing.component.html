@@ -1,0 +1,20 @@
+<div class="billing-container">
+  <h2>Billing &amp; Invoices</h2>
+
+  <div *ngIf="isLoading" class="loading-spinner">
+    Loading your invoices...
+  </div>
+
+  <div *ngIf="errorMessage" class="error-banner">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="invoices-list">
+    <div *ngFor="let invoice of invoices" class="invoice-card">
+      <p>Invoice #{{ invoice.id }}</p>
+      <p>Amount: {{ invoice.amount | currency }}</p>
+      <p>Due: {{ invoice.dueDate }}</p>
+      <p class="status status--{{ invoice.status }}">{{ invoice.status }}</p>
+    </div>
+  </div>
+</div>
